@@ -24,7 +24,7 @@ Task Init {
     "`n"
 }
 
-Task Build -Depends Init, LicenseChecks, StaticCodeAnalysis {
+Task Build -Depends Init, LicenseChecks {
     $lines
     
     # Import-Module to check everything's ok
@@ -40,24 +40,6 @@ Task Build -Depends Init, LicenseChecks, StaticCodeAnalysis {
       } 
       else {
         "Not updating module psd1 version - no env:PackageVersion set"
-      }
-    }
-}
-
-Task StaticCodeAnalysis {
-    $Results = Invoke-ScriptAnalyzer -Path $ProjectRoot -Recurse -Settings "$PSScriptRoot\PSCIScriptingStyle.psd1" -Verbose
-    if ($Results) {
-        $ResultString = $Results | Out-String
-        Write-Warning $ResultString  
-        if ($ENV:BHBuildSystem -eq 'AppVeyor') {
-            Add-AppveyorMessage -Message "PSScriptAnalyzer output contained one or more result(s) with 'Error' severity.`
-            Check the 'Tests' tab of this build for more details." -Category Error
-            Update-AppveyorTest -Name "PsScriptAnalyzer" -Outcome Failed -ErrorMessage $ResultString
-        }        
-        throw "Build failed"
-    } else {
-      if ($ENV:BHBuildSystem -eq 'AppVeyor') {
-            Update-AppveyorTest -Name "PsScriptAnalyzer" -Outcome Passed
       }
     }
 }
